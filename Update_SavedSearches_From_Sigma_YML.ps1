@@ -1,9 +1,49 @@
-﻿import-module powershell-yaml
+﻿[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function Get-Web-Download($url,$DownloadFolder)
+{
+
+    # obtain download location
+    $download_filename = $url.Split("/")[-1]
+    $download_path = "$DownloadFolder\$download_filename"
+
+    # remove any previously downloaded fies
+    if (test-path $download_path) {
+        Remove-Item -Path $download_path -Force
+    }
+
+    # download the file
+    write-host "Downloading $url" 
+    $client = new-object System.Net.WebClient 
+    $client.DownloadFile($url, $download_path) 
+
+    # return the path to file
+    return $download_path
+}
+
+function Expand-ZIPFile($file, $destination)
+{
+    $shell = new-object -com shell.application
+    $zip = $shell.NameSpace($file)
+    foreach($item in $zip.items())
+    {
+        $shell.Namespace($destination).copyhere($item)
+    }
+}
+
+# remove previous downloads
+if (test-path "$env:temp\master.zip") { Remove-Item "$env:temp\master.zip" -Force }
+if (test-path "$env:temp\sigma-master") { Remove-Item "$env:temp\sigma-master" -Force -Recurse }
+New-Item -ItemType Directory -Path "$env:temp\sigma-master"
+Get-Web-Download -url "https://github.com/Neo23x0/sigma/archive/master.zip" -DownloadFolder "$env:temp"
+Expand-ZIPFile -file "$env:temp\master.zip" -destination "$env:temp\sigma-master"
+
+import-module powershell-yaml
 # https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 # install-package powershell-yaml
 # https://github.com/cloudbase/powershell-yaml
 
-$RulePath = "C:\Development\sigma-master\rules\*.yml"
+$RulePath = "$env:temp\sigma-master\sigma-master\rules\*.yml"
 $SavedSearchesPath = "C:\Development\TA-Sigma-Searches\default\savedsearches.conf"
 $RuleSet = Get-ChildItem $RulePath -Filter "*.yml"  -Recurse
 
