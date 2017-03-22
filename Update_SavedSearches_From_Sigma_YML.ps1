@@ -28,19 +28,29 @@ foreach ($Rule in $RuleSet)
 
     $obj = ConvertFrom-Yaml $RuleData
 
-    switch -Wildcard ($obj.logsource.service)
-    {
-        sysmon*    {$SourceType="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational"}
-        default     {$SourceType="*"}
-    }
-
-    $SPL = $SPL.Replace("EventID","EventCode")
-
     $product = $($obj.logsource.product)
     $service = $($obj.logsource.service)
     if (!($product)) { $product = "unknown" }
     if (!($service)) { $service = "unknown" }
     $prefix = "$product`:$service"
+
+    switch -Wildcard ($prefix)
+    {
+        windows:sysmon          {$SourceType="*WinEventLog:Microsoft-Windows-Sysmon/Operational"}
+        windows:security        {$SourceType="*WinEventLog:Security"}
+        windows:powershell      {$SourceType="*Microsoft-Windows-PowerShell/Operational"}
+        windows:system          {$SourceType="*WinEventLog:System"}
+        windows:application     {$SourceType="*WinEventLog:Application"}
+        windows:taskscheduler   {$SourceType="*WinEventLog:Microsoft-Windows-TaskScheduler/Operational"}
+        #linux:unknown        
+        #linux:modsecurity    
+        #linux:clamav         
+        #linux:syslog         
+        #apache:unknown             
+        default                 {$SourceType="*"}
+    }
+
+    $SPL = $SPL.Replace("EventID","EventCode")
 
     $description = "$($obj.description). Author: $($obj.author)  Status: $($obj.status) Level: $($obj.level) FalsePositives: $($obj.falsepositives)"
 
