@@ -55,7 +55,7 @@ foreach ($Rule in $RuleSet)
     $description = "$($obj.description). Author: $($obj.author)  Status: $($obj.status) Level: $($obj.level) FalsePositives: $($obj.falsepositives)"
 
     $section = @("
-[$prefix - $($obj.title)]
+[$prefix`:$($obj.level) - $($obj.title)]
 search = sourcetype=`"$SourceType`" $SPL
 dispatch.earliest_time = -24h
 description = $description")
