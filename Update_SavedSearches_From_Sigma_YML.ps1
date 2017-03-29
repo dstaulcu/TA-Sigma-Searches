@@ -47,7 +47,7 @@ $RulePath = "$env:temp\sigma-master\sigma-master\rules\*.yml"
 $SavedSearchesPath = "C:\Development\TA-Sigma-Searches\default\savedsearches.conf"
 $RuleSet = Get-ChildItem $RulePath -Filter "*.yml"  -Recurse
 
-$PythonPath = "C:\Program Files (x86)\Python\Python35-32\python.exe"
+$PythonPath = "C:\Python36-32\python.exe"
 $SigmacPath = "C:\Development\sigma-master\tools\sigmac.py"
 $RulePath = "C:\Development\sigma-master\rules\windows\sysmon"
 $env:PATHEXT += ";.py"
@@ -191,3 +191,10 @@ dispatch.earliest_time = -24h@h
 description = combined search of low severity signatures")
 write-host $section
 $section | Out-File $SavedSearchesPath -Append
+
+Set-Location "C:\Development\TA-Sigma-Searches"
+& git add C:\Development\TA-Sigma-Searches\default\savedsearches.conf
+$shortdate = (Get-Date).ToString("yyyy.MM.dd.hh.mm.ss")
+$comment = "update v$shortdate"
+& git commit -m "$comment"
+& git push origin master
